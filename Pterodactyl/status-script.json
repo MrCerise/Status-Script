@@ -1,0 +1,64 @@
+{
+    "name": "Discord Status Updater",
+    "author": "MrCerise",
+    "description": "Update Discord custom status periodically.",
+    "version": "1.0.0",
+    "tags": [
+      "discord",
+      "status",
+      "updater"
+    ],
+    "startup": "npm install && node main.js",
+    "config": [
+      {
+        "key": "token",
+        "name": "User Token",
+        "description": "Discord User Token",
+        "env": true,
+        "required": true,
+        "default": ""
+      },
+      {
+        "key": "interval",
+        "name": "Status Update Interval",
+        "description": "Interval in milliseconds between status updates",
+        "env": false,
+        "required": false,
+        "default": 5000
+      },
+      {
+        "key": "statusList",
+        "name": "Status List",
+        "description": "List of statuses to cycle through",
+        "env": false,
+        "required": true,
+        "default": [
+          {
+            "text": "Text 1",
+            "emoji_id": "ID",
+            "emoji_name": "Name",
+            "status": "dnd"
+          },
+          {
+            "text": "Text 2",
+            "emoji_id": null,
+            "emoji_name": null,
+            "status": "idle"
+          },
+          {
+            "text": "Text 3",
+            "emoji_id": null,
+            "emoji_name": null,
+            "status": "online"
+          }
+        ]
+      }
+    ],
+    "scripts": {
+      "install": "npm install node-fetch axios luxon"
+    },
+    "files": {
+      "main.js": "const fetch = require('node-fetch');\nconst axios = require('axios');\nconst { DateTime } = require('luxon');\n\nconst token = process.env.token;\nconst interval = process.env.interval || 5000;\nconst statusList = process.env.statusList || [\n  {\n    \"text\": \"Text 1\",\n    \"emoji_id\": \"ID\",\n    \"emoji_name\": \"Name\",\n    \"status\": \"dnd\"\n  },\n  {\n    \"text\": \"Text 2\",\n    \"emoji_id\": null,\n    \"emoji_name\": null,\n    \"status\": \"idle\"\n  },\n  {\n    \"text\": \"Text 3\",\n    \"emoji_id\": null,\n    \"emoji_name\": null,\n    \"status\": \"online\"\n  }\n];\n\nasync function updateStatus(text, emoji_id, emoji_name, status) {\n  try {\n    const url = 'https://discord.com/api/v10/users/@me/settings';\n    const headers = { Authorization: `Bearer ${token}` };\n    const payload = {\n      custom_status: {\n        text,\n        emoji_id,\n        emoji_name\n      },\n      status: status.toString()\n    };\n    const response = await axios.patch(url, payload, { headers });\n    console.log('Updated');\n    return response.status === 200;\n  } catch (error) {\n    console.log(`Failed to update status. Error: ${error}`);\n    return false;\n  }\n}\n\nasync function main() {\n  while (true) {\n    for (const statusItem of statusList) {\n      const { text, emoji_id, emoji_name, status } = statusItem;\n      const updated = await updateStatus(text, emoji_id, emoji_name, status);\n      await new Promise(resolve => setTimeout(resolve, interval));\n    }\n  }\n}\n\nmain();"
+    }
+  }
+  
