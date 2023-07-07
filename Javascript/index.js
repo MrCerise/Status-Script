@@ -1,42 +1,48 @@
+const fetch = require('node-fetch');
 const axios = require('axios');
 const { DateTime } = require('luxon');
 
 const token = "User Token";
 let status = true;
 
-// Made by Mr Cerise
-
 const statusList = [
   {
-    text: "Text 1",
-    emojiId: "ID",
-    interval: 3000
+    "text": "Text 1",
+    "emoji_id": "ID",
+    "emoji_name": "Name", // :css:
+    "interval": 3000, // Time in ms
+    "status": "dnd" // online,idle,offline,dnd
   },
   {
-    text: "Text 2",
-    emojiId: null,
-    interval: 5000
+    "text": "Text 2",
+    "emoji_id": null,
+    "emoji_name": null,
+    "interval": 5000,
+    "status": "idle"
   },
   {
-    text: "Text 3",
-    emojiId: null,
-    interval: 7000 // Interval in MS
+    "text": "Text 3",
+    "emoji_id": null,
+    "emoji_name": null,
+    "interval": 7000,
+    "status": "online"
   }
 ];
 
-// Made by Mr Cerise
-
-async function updateStatus(text, emojiId ) {
+async function updateStatus(text, emoji_id, emoji_name, status) {
   try {
-    const url = "https://discord.com/api/v10/users/@me/settings";
-    const headers = { "Authorization": token };
+    const url = 'https://discord.com/api/v10/users/@me/settings';
+    const headers = { Authorization: token };
     const payload = {
-      "custom_status": {
-        "text": text,
-        "emoji_id": emojiId
-      }
+      custom_status: {
+        text,
+        emoji_id,
+        emoji_name
+      },
+      status: status.toString()
     };
     const response = await axios.patch(url, payload, { headers });
+    console.log('Updated');
     return response.status === 200;
   } catch (error) {
     console.log(`Failed to update status. Error: ${error}`);
@@ -44,23 +50,14 @@ async function updateStatus(text, emojiId ) {
   }
 }
 
-// Made by Mr Cerise
-
-async function main() {
+async function main(status) {
   while (status) {
     for (const statusItem of statusList) {
-      const { text, emojiId, interval } = statusItem;
-      const updated = await updateStatus(text, emojiId);
-      if (updated) {
-        await new Promise((resolve) => setTimeout(resolve, interval));
-      } else {
-        break;
-      }
+      const { text, emoji_id, emoji_name, interval } = statusItem;
+      const updated = await updateStatus(text, emoji_id, emoji_name, statusItem.status);
+      await new Promise(resolve => setTimeout(resolve, interval));
     }
   }
 }
 
-// Made by Mr Cerise
-console.log("Working - By Mr Cerise");
-
-main();
+main(status);
